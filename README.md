@@ -3,6 +3,11 @@
 > **A complete, self-hosted Discord moderation bot. Slash-command native. Zero databases.
 > Zero dashboards. Just a token, a server invite, and order restored.**
 
+[![Landing](https://img.shields.io/badge/live%20landing-zenxwyi-ux.github.io%2Fvigil--discord--bot-1a0dab)](https://zenxwyi-ux.github.io/vigil-discord-bot)
+[![CI](https://img.shields.io/github/actions/workflow/status/zenxwyi-ux/vigil-discord-bot/ci.yml?branch=main&label=ci)](https://github.com/zenxwyi-ux/vigil-discord-bot/actions)
+[![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen)](https://github.com/zenxwyi-ux/vigil-discord-bot)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 VIGIL runs directly against the **Discord API** (REST + Gateway, via discord.js v14)
 — no external services, no MongoDB, no webhooks, no smoke and mirrors. Everything
 it does is a real API call: `PATCH /guilds/{id}/members/{userId}` for timeouts,
@@ -116,6 +121,22 @@ src/
 ```
 
 Warnings persist to `src/data/warnings.json` (gitignored — never committed).
+The path can be overridden with `VIGIL_WARNINGS_FILE` (the tests point it at a
+temp directory).
+
+---
+
+## ✅ Tests
+
+`npm test` — 26 tests across the pure-logic modules (`node --test`, no test
+framework):
+
+- **time.js** — duration parse/format: units, decimals, case, garbage rejection
+- **warnings.js** — JSON ledger: add, get (copy-safe), remove, clear, list
+- **permissions.js** — hierarchy + permission guards against fake guild/member shapes
+- **embeds.js** — clamping, backtick escaping, field inline flags
+
+CI runs the suite against Node 20 / 22 on every push and PR.
 
 ---
 

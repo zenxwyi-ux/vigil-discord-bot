@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vigil — The Discord Moderation Sentinel</title>
+<meta name="description" content="VIGIL is a self-hosted Discord moderation bot. Zero databases, zero dashboards. Slash-command native, audit-first, raid-aware.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --shell: #eef0ec;
+    --paper: #ffffff;
+    --ink: #14161c;
+    --blue: #1a0dab;
+    --green: #188038;
+    --amber: #a05a00;
+    --red: #c5221f;
+    --line: #d9dcd6;
+    --muted: #5b6068;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--shell);
+    color: var(--ink);
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  header {
+    background: var(--ink);
+    color: #fff;
+    padding: 72px 32px 88px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 300px at 20% 0%, rgba(26,13,171,.35), transparent 60%),
+      radial-gradient(ellipse 500px 260px at 80% 100%, rgba(24,128,56,.25), transparent 60%);
+    pointer-events: none;
+  }
+  .kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: #9aa0a8; margin-bottom: 14px; position: relative;
+  }
+  h1 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: clamp(34px, 6vw, 64px);
+    font-weight: 800; letter-spacing: -.03em; position: relative;
+  }
+  h1 .dot { color: var(--green); }
+  header .sub {
+    position: relative; margin: 18px auto 0; max-width: 620px;
+    color: #c6cbd2; font-size: 17px;
+  }
+  .cmd {
+    position: relative; margin: 28px auto 0;
+    display: inline-block; font-family: "JetBrains Mono", monospace;
+    font-size: 13px; color: #7ee2a0;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 10px; padding: 12px 18px;
+  }
+  .cmd::before { content: "$ "; color: #9aa0a8; }
+  main { max-width: 1000px; margin: 0 auto; padding: 0 24px 72px; }
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-top: -44px; position: relative; z-index: 2;
+  }
+  @media (max-width: 720px) { .stats { grid-template-columns: 1fr; } }
+  .stat {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; padding: 20px;
+  }
+  .stat b { font-family: "Bricolage Grotesque", sans-serif; font-size: 30px; font-weight: 800; display: block; }
+  .stat span { font-size: 13px; color: var(--muted); font-weight: 600; }
+  h2 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 26px; font-weight: 800; letter-spacing: -.02em;
+    margin: 56px 0 8px;
+  }
+  .lead { color: var(--muted); max-width: 60ch; margin-bottom: 22px; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px;
+  }
+  .card h3 { font-family: "Bricolage Grotesque", sans-serif; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card h3 .i {
+    width: 26px; height: 26px; border-radius: 7px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; background: var(--shell);
+  }
+  .card p { font-size: 14px; color: var(--muted); margin-top: 8px; }
+  .commands {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; overflow: hidden;
+  }
+  .commands table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .commands th {
+    text-align: left; font-family: "JetBrains Mono", monospace;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); padding: 12px 16px;
+    border-bottom: 1px solid var(--line); background: #fafbf8;
+  }
+  .commands td { padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .commands td:first-child { font-family: "JetBrains Mono", monospace; color: var(--blue); font-weight: 600; white-space: nowrap; }
+  .commands tr:last-child td { border-bottom: none; }
+  code {
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px;
+    background: var(--shell); border-radius: 5px; padding: 2px 6px;
+  }
+  .badge-row { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge-row a {
+    font-family: "JetBrains Mono", monospace; font-size: 11.5px; font-weight: 600;
+    text-decoration: none; color: var(--ink); border: 1px solid var(--line);
+    background: var(--paper); border-radius: 999px; padding: 7px 14px;
+    transition: border-color .15s, color .15s;
+  }
+  .badge-row a:hover { border-color: var(--blue); color: var(--blue); }
+  footer {
+    border-top: 1px solid var(--line); padding: 26px 24px;
+    text-align: center; color: var(--muted); font-size: 13px;
+  }
+  footer a { color: var(--blue); text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">vigil · v1.0 · self-hosted moderation</div>
+  <h1>Order, <span style="color:var(--green)">unattended.</span></h1>
+  <p class="sub">A Discord moderation bot that runs the way your servers should —
+  with zero databases, zero dashboards, and zero babysitting. One Node process,
+  one <code style="background:rgba(255,255,255,.1);color:#e6e9ed">.env</code> file,
+  and order restored.</p>
+  <div class="cmd">git clone https://github.com/zenxwyi-ux/vigil-discord-bot &amp;&amp; cd vigil-discord-bot</div>
+</header>
+
+<main>
+  <section class="stats">
+    <div class="stat"><b>16</b><span>slash commands</span></div>
+    <div class="stat"><b>0</b><span>databases</span></div>
+    <div class="stat"><b>100%</b><span>real Discord API calls</span></div>
+  </section>
+
+  <h2>What it watches</h2>
+  <p class="lead">VIGIL isn't a dashboard wearing a costume. Every action it takes
+  is a real API call — <code>PATCH</code> for timeouts, <code>DELETE</code> for
+  kicks, <code>PUT</code> for bans. When it says someone is timed out, Discord
+  itself says so too.</p>
+  <section class="grid">
+    <div class="card">
+      <h3><span class="i">🛡️</span> Moderation</h3>
+      <p>Kick, ban, timeout, warn, purge — with role-hierarchy awareness. If the
+      target outranks VIGIL, it refuses instead of failing red.</p>
+    </div>
+    <div class="card">
+      <h3><span class="i">📜</span> Audit-first</h3>
+      <p>Every action lands in an auto-created <code>#mod-log</code>: kicks, bans,
+      timeouts, purges, even edits and deletes from other users.</p>
+    </div>
+    <div class="card">
+      <h3><span class="i">🚨</span> Raid radar</h3>
+      <p>Watches join velocity and raises the alarm the moment an account-burst
+      looks like a raid — before the channels fill up.</p>
+    </div>
+    <div class="card">
+      <h3><span class="i">💬</span> Human-native replies</h3>
+      <p>Every reply is an ephemeral embed — only you see the confirmation, the
+      chat stays clean for your members.</p>
+    </div>
+    <div class="card">
+      <h3><span class="i">🔒</span> Permission-aware</h3>
+      <p>Self-targeting, owner-targeting, and bot-targeting are all refused. The
+      hierarchy check runs before every single action.</p>
+    </div>
+    <div class="card">
+      <h3><span class="i">📁</span> No smoke and mirrors</h3>
+      <p>No MongoDB, no webhooks, no external services. Warnings live in a local
+      JSON file. Delete the folder and it's gone.</p>
+    </div>
+  </section>
+
+  <h2>Command map</h2>
+  <p class="lead">Sixteen slash commands, grouped by what they do.</p>
+  <section class="commands">
+    <table>
+      <tr><th>command</th><th>what it does</th></tr>
+      <tr><td>/warn</td><td>Issue a warning with a reason (ephemeral confirmation)</td></tr>
+      <tr><td>/warnings</td><td>List a member's warning history</td></tr>
+      <tr><td>/remove-warning</td><td>Retract a specific warning by ID</td></tr>
+      <tr><td>/clear-warnings</td><td>Wipe a member's warning slate</td></tr>
+      <tr><td>/timeout</td><td>Timeout a member for a human duration ("10s", "2h", "3d")</td></tr>
+      <tr><td>/kick</td><td>Kick a member</td></tr>
+      <tr><td>/ban</td><td>Ban a member, optionally pruning their messages</td></tr>
+      <tr><td>/unban</td><td>Reverse a ban by user ID</td></tr>
+      <tr><td>/purge</td><td>Bulk-delete messages in a channel</td></tr>
+      <tr><td>/slowmode</td><td>Set channel slowmode to slow down spam</td></tr>
+      <tr><td>/lock · /unlock</td><td>Toggle channel send-permission lockdown</td></tr>
+      <tr><td>/modlog</td><td>Locate (or create) the #mod-log channel</td></tr>
+      <tr><td>/raid-status</td><td>Report the current join-velocity posture</td></tr>
+      <tr><td>/help</td><td>The command atlas, rendered as an embed</td></tr>
+      <tr><td>/ping</td><td>Latency &amp; gateway health</td></tr>
+    </table>
+  </section>
+
+  <h2>Deploy</h2>
+  <p class="lead">Two files, one process, zero infrastructure.</p>
+  <section class="commands" style="padding:18px">
+    <pre style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;overflow-x:auto"><code># 1. Copy the example env and fill in your bot credentials
+cp .env.example .env
+
+# 2. Install and start
+npm install
+npm start
+
+# 3. Invite the bot with these scopes, and it creates its own #mod-log
+#    (Manage Server + Moderate Members + Send Messages, application.commands)</code></pre>
+  </section>
+
+  <section class="badge-row">
+    <a href="https://github.com/zenxwyi-ux/vigil-discord-bot">GitHub repository</a>
+    <a href="https://github.com/zenxwyi-ux/vigil-discord-bot/blob/main/README.md">README</a>
+    <a href="https://github.com/zenxwyi-ux/vigil-discord-bot/actions">CI status</a>
+    <a href="https://github.com/zenxwyi-ux/vigil-discord-bot/blob/main/LICENSE">MIT license</a>
+  </section>
+</main>
+
+<footer>
+  vigil · part of the <a href="https://zenxwyi-ux.github.io/portfolio">systems that run unattended</a> portfolio
+</footer>
+</body>
+</html>

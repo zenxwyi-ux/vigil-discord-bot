@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, '..', 'data');
-const FILE = join(DATA_DIR, 'warnings.json');
+const FILE = process.env.VIGIL_WARNINGS_FILE || join(DATA_DIR, 'warnings.json');
 
 let cache = null;
 
