@@ -1,0 +1,27 @@
+{
+  "name": "discord-moderator",
+  "version": "1.0.0",
+  "description": "A complete, self-hosted Discord moderation bot built on the Discord API (discord.js v14)",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "register": "node src/deploy.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "moderation",
+    "moderator",
+    "discord.js"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.0.0"
+  }
+}
